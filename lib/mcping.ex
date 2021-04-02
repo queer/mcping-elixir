@@ -78,7 +78,19 @@ defmodule MCPing do
   def get_info(address, port \\ 25565, timeout \\ 3000) do
     # gen_tcp uses Erlang strings (charlists), convert this beforehand
     address_chars = to_charlist(address)
-    result = :gen_tcp.connect(address_chars, port, [:binary, :inet, :inet6, active: false], timeout)
+
+    mode =
+      case :inet.parse_address(address) do
+        {:ok, {_, _, _, _}} -> :inet
+        {:ok, {_, _, _, _, _, _, _, _}} -> :inet6
+        {:error, _} ->
+          case :inet.gethostbyaddr(address) do
+            {:ok, {_, _, type, _, _}} -> type
+            {:error, _} -> :inet
+          end
+      end
+
+    result = :gen_tcp.connect(address_chars, port, [:binary, mode, active: false], timeout)
 
     case result do
       {:ok, conn} ->
