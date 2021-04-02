@@ -85,7 +85,7 @@ defmodule MCPing do
         {:ok, {_, _, _, _, _, _, _, _}} -> :inet6
         {:error, _} ->
           case :inet.gethostbyaddr(address) do
-            {:ok, {_, _, type, _, _}} -> type
+            {:ok, {:hostent, _, _, type, _, _}} -> type
             {:error, _} -> :inet
           end
       end
